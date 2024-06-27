@@ -1,0 +1,137 @@
+1)Create a collection named employee and insert documents using the above given data.
+ans:--------------------------------------------------
+db.createCollection("employee")
+db.employee.insertMany([
+{
+eid: "E12345",
+name: "Doe",
+age: 40,
+dname: "Engineering",
+projects: [
+{
+pname: "Website",
+members: ["Alice", "Bob", "John"],
+status: "In Progress"
+},
+{
+pname: "Mobile App",
+members: ["Tom", "Jane", "Mike"],
+status: "Completed"
+}
+]
+},
+{
+eid: "E98765",
+name: "Johnson",
+age: 32,
+dname: "Finance",
+projects: [
+{
+pname: "Financial",
+members: ["William", "David"],
+status: "Completed"
+}
+]
+},
+{
+eid: "E13579",
+name: "Emily",
+age: 28,
+dname: "Human Resources",
+projects: [
+{
+pname: "Onboarding",
+members: ["Sophia", "Robert"],
+status: "In Progress"
+}
+]
+},
+{
+eid: "E54321",
+name: "Smith",
+age: 37,
+dname: "Sales",
+projects: [
+{
+pname: "Product",
+members: ["Mark", "Emily"],
+status: "Completed"
+},
+{
+pname: "Marketing",
+members: ["Jane", "Tom"],
+status: "In Progress"
+}
+]
+},
+{
+eid: "E24680",
+name: "William",
+age: 30,
+dname: "Human Resources",
+projects: [
+{
+pname: "Quality",
+members: ["Anna", "Sophia", "James"],
+status: "In Progress"
+}
+]
+}
+])
+////////////////////////////////////close//////////////////////////
+
+2:Add a new filed named year, which is joining date of an employee, to every document with a 
+value 2008
+ans:-------------------------------------------------------------
+db.employee.updateMany({}, {$set: {year: 2008}})
+///////////////////////////////////close///////////////////////////////////////
+
+3:Delete the field named age from every document.
+ans:--------------------------------------------------------
+db.employee.updateMany({}, {$unset: {age: ""}})
+/////////////////////////////////////close////////////////////////////////////////
+
+4:Perform the following queries;
+(1):-Update year to 1800 for an employee named ‘William’
+ans:----------------------------------------------------------------
+db.employee.updateOne({name: "William"}, {$set: {year: 1800}})
+//////////////////////////////////close///////////////////////////////////////
+
+(2):-Find all unique department names (include only dname)
+ans:-db.employee.distinct("dname")
+/////////////////////////////close//////////////////////////
+
+(3):Find those employees that contain a letter ‘o’ anywhere in their name (include only _id and 
+name)
+ans:-db.employee.find({name: /o/i}, {_id: 1, name: 1})
+///////////////////////////////close////////////////////
+
+(4):Retrieve the employees who are currently working on ‘In Progress’ projects (include only name
+and dname)
+ans:db.employee.aggregate([
+{$unwind: "$projects"},
+{$match: {"projects.status": "In Progress"}},
+{$project: {name: 1, dname: 1, _id: 0}}
+])
+//////////////////////////////////close//////////////////////////////////
+
+(5):Find all projects where the members include both ‘Tom’ and ‘Jane’, sorted by department name 
+in descending order (include only department name, project name and members). 
+ans:-db.employee.aggregate([
+{$unwind: "$projects"},
+{$match: {"projects.members": {$all: ["Tom", "Jane"]}}},
+{$project: {dname: 1, "projects.pname": 1, "projects.members": 1, _id: 0}},
+{$sort: {dname: -1}}
+])
+//////////////////////close//////////////////////////////////
+
+(6):. List the total count of employees in each department (include only department name and total).
+
+ans:-db.employee.aggregate([
+{{$project: {_id: 0, dname: "$_id", total: 1}}
+])
+///////////////////////////////close///////////////////////////////////////////
+
+(7):Find the employee who joined before every other employee (include only name and year).
+ans:-db.employee.find({}, {name: 1, year: 1, _id: 0}).sort({year: 1}).limit(1)
+/////////////////////////////////close///////////////////////////////////////////////////////
